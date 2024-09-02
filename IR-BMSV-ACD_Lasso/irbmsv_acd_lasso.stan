@@ -51,8 +51,8 @@ transformed parameters {
   
   // Initialize matrices for the covariance of innovations and observations
   for (t in 1:T) {
-    matrix[p, p] H_t_sqrt = diag_matrix(to_vector(exp(h[t] / 2)));
-    sigma_y[t] = H_t_sqrt * Sigma * H_t_sqrt;
+    mv_cov[t] = to_vector(exp(h[t] / 2));
+    sigma_y[t] = quad_form_diag(Sigma,mv_cov[t]);
   }
 }
 
