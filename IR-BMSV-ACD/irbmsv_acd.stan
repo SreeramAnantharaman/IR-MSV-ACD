@@ -1,3 +1,13 @@
+// Formula (Paper) to code relevance
+// Code  | Paper
+// omega = omega;
+// delta = delta;
+// durpar = alpha;
+// mu = mu;
+// tau = sigmasq;
+// phi = phi;
+// Lcorr = R/Rho;
+
 data {
   int T;
   int<lower=1> q;
@@ -16,15 +26,13 @@ parameters {
   simplex[k] durpar;
   vector[p] mu;
   vector<lower=0, upper=1>[p] tau;
-  vector<lower=0, upper=1>[p] phistar;
+  vector<lower=0, upper=1>[p] phi;
   cholesky_factor_corr[p] Lcorr_raw;  // Raw Cholesky factor
   matrix[T, p] h_std;  // Latent state
 }
 
 transformed parameters {
-  vector<lower=-1, upper=1>[p] phi;
-  phi=2*phistar-1;
-  matrix[T, p] mu_sv;    // Matrix for the state variables
+  matrix[T, p] mu_sv;
   matrix[T, p] h;
   for (j in 1:p) {
     mu_sv[1, j] = mu[j];
@@ -32,8 +40,8 @@ transformed parameters {
     h[1,j] /= sqrt(1 - phi[j]*phi[j]);
     h[1,j] += mu_sv[1, j];
     for (t in 2:T) {
-      mu_sv[t, j] = mu[j] + phi[j]^(ceil(g[t])) * (h[t - 1, j] - mu[j]);
-      h[t,j] *= sqrt((1 - phi[j]^(2*ceil(g[t]))) / (1 - phi[j]*phi[j]));
+      mu_sv[t, j] = mu[j] + phi[j]^(g[t]) * (h[t - 1, j] - mu[j]);
+      h[t,j] *= sqrt((1 - phi[j]^(2*g[t])) / (1 - phi[j]*phi[j]));
       h[t,j] += mu_sv[t, j];
     }
   }
@@ -61,7 +69,7 @@ model {
   delta ~ gamma(0.001, 0.001);
   omega ~ gamma(0.001, 0.001);
   durpar ~ dirichlet(rep_vector(alpha_dir, k));
-  phistar ~ beta(1, 1);
+  phi ~ beta(1, 1);
   
   // LKJ prior for the raw Cholesky factor
   Lcorr_raw ~ lkj_corr_cholesky(1.3);

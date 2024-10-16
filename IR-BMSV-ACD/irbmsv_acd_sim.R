@@ -39,7 +39,7 @@ require(MASS)
 
 for (j in 1:m){
   mu=c(-9,-9.5,-8.5,-8)
-  itau2=c(0.9,0.7,0.5,0.3)
+  itau2=c(0.9,0.7,0.5,0.3) #sigmasq
   phi=c(0.7,0.5,0.3,0.9)
   h=matrix(0,T,p)
   sigma_y=array(0,c(T,p,p))
@@ -62,7 +62,7 @@ for (j in 1:m){
   sigma_y[1,,]=diag(exp(h[1,]/2))%*%Sigma%*%diag(exp(h[1,]/2))
   y[j,1,]=mvrnorm(n = 1, rep(0,p),sigma_y[1,,])
   for (i in 2:T){
-    h[i,]=rnorm(p,mean=mu+phi^(ceiling(g_sim[i]))*(h[i-1,]-mu),sd=sqrt(itau2*(1-phi^(2*ceiling(g_sim[i])))/(1-phi^2)))
+    h[i,]=rnorm(p,mean=mu+phi^(g_sim[i])*(h[i-1,]-mu),sd=sqrt(itau2*(1-phi^(2*g_sim[i]))/(1-phi^2)))
     sigma_y[i,,]=diag(exp(h[i,]/2))%*%Sigma%*%diag(exp(h[i,]/2))
     y[j,i,]=mvrnorm(n = 1, rep(0,p),sigma_y[i,,] )
   }
@@ -189,7 +189,7 @@ for (id in 1:nSamp){
   sigma_y[1,,]=diag(exp(h_fit[1,]/2))%*%Sigma_fit%*%diag(exp(h_fit[1,]/2))
   y_fit[j,1,]=mvrnorm(n = 1, rep(0,p),sigma_y[1,,])
   for (i in 2:T){
-    h_fit[i,]=rnorm(p,mean=mu+phi^(ceiling(g_fit[i]))*(h[i-1,]-mu),sd=sqrt(itau2*(1-phi^(2*ceiling(g_fit[i])))/(1-phi^2)))
+    h_fit[i,]=rnorm(p,mean=mu+phi^(g_fit[i])*(h[i-1,]-mu),sd=sqrt(itau2*(1-phi^(2*g_fit[i]))/(1-phi^2)))
     sigma_y[i,,]=diag(exp(h_fit[i,]/2))%*%Sigma_fit%*%diag(exp(h_fit[i,]/2))
     y_fit[j,i,]=mvrnorm(n = 1, rep(0,p),sigma_y[i,,])
   }
@@ -321,11 +321,11 @@ for (id in 1:nSamp){
     psi_fore[t] <- omega+alpha[1:q]%*%gppSamples_fore[(t-1):(t-q)]
     gppSamples_fore[t] <- rgamma(n=1, shape=eta, scale=psi_fore[t]/eta)
   }
-  h_fore[1,]=rnorm(p,mean=mu+phi^(ceiling(gppSamples_fore[1]))*(h[5000,]-mu),sd=sqrt(itau2*(1-phi^(2*ceiling(gppSamples_fore[1])))/(1-phi^2)))
+  h_fore[1,]=rnorm(p,mean=mu+phi^(gppSamples_fore[1])*(h[5000,]-mu),sd=sqrt(itau2*(1-phi^(2*gppSamples_fore[1]))/(1-phi^2)))
   sigma_y[1,,]=diag(exp(h_fore[1,]/2))%*%Sigma_fore%*%diag(exp(h_fore[1,]/2))
   y_fore[j,1,]=mvrnorm(n = 1, rep(0,p),sigma_y[1,,])
   for (i in 2:T){
-    h_fore[i,]=rnorm(p,mean=mu+phi^(ceiling(gppSamples_fore[i]))*(h_fore[i-1,]-mu),sd=sqrt(itau2*(1-phi^(2*ceiling(gppSamples_fore[i])))/(1-phi^2)))
+    h_fore[i,]=rnorm(p,mean=mu+phi^(gppSamples_fore[i])*(h_fore[i-1,]-mu),sd=sqrt(itau2*(1-phi^(2*gppSamples_fore[i]))/(1-phi^2)))
     sigma_y[i,,]=diag(exp(h_fore[i,]/2))%*%Sigma_fore%*%diag(exp(h_fore[i,]/2))
     y_fore[j,i,]=mvrnorm(n = 1, rep(0,p),sigma_y[i,,])
   }

@@ -1,3 +1,15 @@
+// Formula (Paper) to code relevance
+// Code  | Paper
+// omega = omega;
+// delta = delta;
+// durpar = alpha;
+// mu = mu;
+// sigmasq = sigmasq;
+// phi = phi;
+// meanar = kappa;
+// beta1 = beta; 
+// sigmasq_rho = gamma;
+
 data {
   int<lower=1> T;            // Number of time points
   int<lower=1> q;
@@ -12,10 +24,10 @@ data {
 parameters {
   vector[p] mu;              // Mean of log-volatility process
   vector<lower=0, upper=1>[p] sigmasq;  // Volatility of log-volatility process
-  vector<lower=0, upper=1>[p] phistar;  // Transformed persistence parameter
+  vector<lower=0, upper=1>[p] phi;  // Transformed persistence parameter
   matrix[T, p] h_std;        // Standardized log-volatility process
   vector[q_dim] meanar;
-  vector<lower=0, upper=1>[q_dim] betastar; // Transformed AR(1) process persistence parameter
+  vector<lower=0, upper=1>[q_dim] beta1; // Transformed AR(1) process persistence parameter
   vector<lower=0, upper=1>[q_dim] sigmasq_rho; // Volatility of AR(1) process for q
   matrix[T, q_dim] nu_raw; // Non-centered innovations for q
   real<lower=0> omega;
@@ -24,10 +36,7 @@ parameters {
 }
 
 transformed parameters {
-  vector<lower=-1, upper=1>[p] phi;
-  phi = 2 * phistar - 1;
-  
-  matrix[T, p] mu_sv;    // Matrix for the state variables
+  matrix[T, p] mu_sv;
   matrix[T, p] h;
   for (j in 1:p) {
     mu_sv[1, j] = mu[j];
@@ -35,14 +44,11 @@ transformed parameters {
     h[1,j] /= sqrt(1 - phi[j]*phi[j]);
     h[1,j] += mu_sv[1, j];
     for (t in 2:T) {
-      mu_sv[t, j] = mu[j] + phi[j]^(ceil(g[t])) * (h[t - 1, j] - mu[j]);
-      h[t,j] *= sqrt((1 - phi[j]^(2*ceil(g[t]))) / (1 - phi[j]*phi[j]));
+      mu_sv[t, j] = mu[j] + phi[j]^(g[t]) * (h[t - 1, j] - mu[j]);
+      h[t,j] *= sqrt((1 - phi[j]^(2*g[t])) / (1 - phi[j]*phi[j]));
       h[t,j] += mu_sv[t, j];
     }
   }
-
-  vector<lower=-1, upper=1>[q_dim] beta1;
-  beta1 = 2 * betastar - 1;
 
   matrix[q_dim, T] mu_ar;
   matrix[q_dim, T] q_ar; // Transformed lower triangular elements of L_t
@@ -52,8 +58,8 @@ transformed parameters {
     q_ar[j,1] /= sqrt(1 - beta1[j]*beta1[j]);
     q_ar[j,1] += mu_ar[j, 1];
     for (t in 2:T) {
-      mu_ar[j, t] = meanar[j]+beta1[j]^(ceil(g[t])) * (q_ar[j, t - 1]-meanar[j]);
-      q_ar[j,t] *= sqrt((1 - beta1[j]^(2*ceil(g[t]))) / (1 - beta1[j]*beta1[j]));
+      mu_ar[j, t] = meanar[j]+beta1[j]^(g[t]) * (q_ar[j, t - 1]-meanar[j]);
+      q_ar[j,t] *= sqrt((1 - beta1[j]^(2*g[t])) / (1 - beta1[j]*beta1[j]));
       q_ar[j,t] += mu_ar[j, t];
     }
   }
@@ -101,9 +107,9 @@ model {
   // Priors
   mu ~ normal(0, 10);
   sigmasq ~ inv_gamma(1, 1);
-  phistar ~ beta(1, 1);
+  phi ~ beta(1, 1);
   meanar ~ normal(0, sqrt(10));
-  betastar ~ beta(1,1);
+  beta1 ~ beta(1,1);
   sigmasq_rho ~ inv_gamma(2.5, 0.25);
   
   // Non-centered parameterization priors

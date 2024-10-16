@@ -1,4 +1,4 @@
-set.seed(as.integer(1234))
+set.seed(as.integer(1234)) #set your seed
 
 library(cmdstanr)
 check_cmdstan_toolchain(fix = TRUE, quiet = TRUE)
@@ -35,11 +35,11 @@ require(MASS)
 
 for (j in 1:m){
   mu=c(-9,-9.5,-8.5,-8)
-  itau2=c(0.9,0.7,0.5,0.3)
+  itau2=c(0.9,0.7,0.5,0.3) #sigmasq
   phi=c(0.7,0.5,0.3,0.9)
-  mu_ar=c(0.25, 0.2, 0.3, 0.15, 0.2, 0.15)
-  beta_ar <- c(0.8, 0.7, 0.95, 0.8, 0.9, 0.85)
-  sigmasq_rho <- c(0.05, 0.05, 0.05, 0.05, 0.05, 0.05)
+  mu_ar=c(0.25, 0.2, 0.3, 0.15, 0.2, 0.15) #kappa
+  beta_ar <- c(0.8, 0.7, 0.95, 0.8, 0.9, 0.85) #beta
+  sigmasq_rho <- c(0.05, 0.05, 0.05, 0.05, 0.05, 0.05) #gamma
   h=matrix(0,T,p)
   sigma_y=array(0,c(T,p,p))
   h[1,]=rnorm(p,mean=mu,sd=sqrt(itau2/(1-phi^2)))
@@ -68,9 +68,9 @@ for (j in 1:m){
   sigma_y[1,,]=cor_matrix%*%diag(exp(h[1,]))%*%t(cor_matrix)
   y[j,1,]=mvrnorm(n = 1, rep(0,p),sigma_y[1,,])
   for (i in 2:T){
-    h[i,]=rnorm(p,mean=mu+phi^(ceiling(g_sim[i]))*(h[i-1,]-mu),sd=sqrt(itau2*(1-phi^(2*ceiling(g_sim[i])))/(1-phi^2)))
-    q_ar[i, ] <- rnorm(p*(p-1)/2, mean =mu_ar+beta_ar^(ceiling(g_sim[i])) * (q_ar[i - 1, ]-mu_ar), 
-                       sd = sqrt(sigmasq_rho * (1 - beta_ar^(2 * ceiling(g_sim[i]))) / (1 - beta_ar^2)))
+    h[i,]=rnorm(p,mean=mu+phi^(g_sim[i])*(h[i-1,]-mu),sd=sqrt(itau2*(1-phi^(2*g_sim[i]))/(1-phi^2)))
+    q_ar[i, ] <- rnorm(p*(p-1)/2, mean =mu_ar+beta_ar^(g_sim[i]) * (q_ar[i - 1, ]-mu_ar), 
+                       sd = sqrt(sigmasq_rho * (1 - beta_ar^(2 *g_sim[i])) / (1 - beta_ar^2)))
     cor_matrix <- diag(p)
     idx <- 1
     # Loop over rows of cor_matrix
@@ -230,9 +230,9 @@ for (id in 1:nSamp){
   sigma_y[1,,]=cor_mat%*%diag(exp(h_fit[1,]))%*%t(cor_mat)
   y_fit[j,1,]=mvrnorm(n = 1, rep(0,p),sigma_y[1,,])
   for (i in 2:T){
-    h_fit[i,]=rnorm(p,mean=mu+phi^(ceiling(g_fit[i]))*(h[i-1,]-mu),sd=sqrt(itau2*(1-phi^(2*ceiling(g_fit[i])))/(1-phi^2)))
-    q_arfit[i, ] <- rnorm(p*(p-1)/2, mean =meanar+beta1^(ceiling(g_fit[i])) * (q_ar[i - 1, ]-meanar), 
-                          sd = sqrt(sigmasq_rho * (1 - beta1^(2 * ceiling(g_fit[i]))) / (1 - beta1^2)))
+    h_fit[i,]=rnorm(p,mean=mu+phi^(g_fit[i])*(h[i-1,]-mu),sd=sqrt(itau2*(1-phi^(2*g_fit[i]))/(1-phi^2)))
+    q_arfit[i, ] <- rnorm(p*(p-1)/2, mean =meanar+beta1^(g_fit[i]) * (q_ar[i - 1, ]-meanar), 
+                          sd = sqrt(sigmasq_rho * (1 - beta1^(2 *g_fit[i])) / (1 - beta1^2)))
     cor_mat <- diag(p)
     idx <- 1
     # Loop over rows of cor_matrix
@@ -372,10 +372,10 @@ for (id in 1:nSamp){
     psi_fore[t] <- omega+alpha[1:q]%*%gppSamples_fore[(t-1):(t-q)]
     gppSamples_fore[t] <- rgamma(n=1, shape=eta, scale=psi_fore[t]/eta)
   }
-  h_fore[1,]=rnorm(p,mean=mu+phi^(ceiling(gppSamples_fore[1]))*(h[5000,]-mu),
-                   sd=sqrt(itau2*(1-phi^(2*ceiling(gppSamples_fore[1])))/(1-phi^2)))
-  q_arfore[1, ] <- rnorm(p*(p-1)/2, mean =meanar+beta1^(ceiling(gppSamples_fore[1])) * (q_ar[5000, ]-meanar), 
-                         sd = sqrt(sigmasq_rho * (1 - beta1^(2 * ceiling(gppSamples_fore[1]))) / (1 - beta1^2)))
+  h_fore[1,]=rnorm(p,mean=mu+phi^(gppSamples_fore[1])*(h[5000,]-mu),
+                   sd=sqrt(itau2*(1-phi^(2*gppSamples_fore[1]))/(1-phi^2)))
+  q_arfore[1, ] <- rnorm(p*(p-1)/2, mean =meanar+beta1^(gppSamples_fore[1]) * (q_ar[5000, ]-meanar), 
+                         sd = sqrt(sigmasq_rho * (1 - beta1^(2 *gppSamples_fore[1])) / (1 - beta1^2)))
   cor_mat <- diag(p)
   idx <- 1
   # Loop over rows of cor_matrix
@@ -389,10 +389,10 @@ for (id in 1:nSamp){
   sigma_y[1,,]=cor_mat%*%diag(exp(h_fore[1,]))%*%t(cor_mat)
   y_fore[j,1,]=mvrnorm(n = 1, rep(0,p),sigma_y[1,,])
   for (i in 2:T){
-    h_fore[i,]=rnorm(p,mean=mu+phi^(ceiling(gppSamples_fore[i]))*(h_fore[i-1,]-mu),
-                     sd=sqrt(itau2*(1-phi^(2*ceiling(gppSamples_fore[i])))/(1-phi^2)))
-    q_arfore[i, ] <- rnorm(p*(p-1)/2, mean =meanar+beta1^(ceiling(gppSamples_fore[i])) * (q_arfore[i-1, ]-meanar), 
-                           sd = sqrt(sigmasq_rho * (1 - beta1^(2 * ceiling(gppSamples_fore[i]))) / (1 - beta1^2)))
+    h_fore[i,]=rnorm(p,mean=mu+phi^(gppSamples_fore[i])*(h_fore[i-1,]-mu),
+                     sd=sqrt(itau2*(1-phi^(2*gppSamples_fore[i]))/(1-phi^2)))
+    q_arfore[i, ] <- rnorm(p*(p-1)/2, mean =meanar+beta1^(gppSamples_fore[i]) * (q_arfore[i-1, ]-meanar), 
+                           sd = sqrt(sigmasq_rho * (1 - beta1^(2 *gppSamples_fore[i])) / (1 - beta1^2)))
     cor_mat <- diag(p)
     idx <- 1
     # Loop over rows of cor_matrix
