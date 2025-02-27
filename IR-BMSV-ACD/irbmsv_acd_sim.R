@@ -94,18 +94,18 @@ fit=model$sample(data=data_list,seed=1,chains = 4,iter_sampling = 1000,parallel_
 par_summary=fit$summary(variables = c("Lcorr", "tau[1]", "tau[2]"
                                       ,"tau[3]", "tau[4]","phi[1]", "phi[2]","phi[3]","phi[4]","delta",
                                       "omega","durpar[1]", "durpar[2]"
-                                      ,"mu[1]", "mu[2]", "mu[3]","mu[4]","alpha_dir"))
+                                      ,"mu[1]", "mu[2]", "mu[3]","mu[4]"))
 
 summary=cbind(par_summary,fit$summary(c("Lcorr", "tau[1]", "tau[2]"
                                         ,"tau[3]", "tau[4]","phi[1]", "phi[2]","phi[3]","phi[4]","delta",
                                         "omega","durpar[1]", "durpar[2]"
-                                        ,"mu[1]", "mu[2]", "mu[3]","mu[4]","alpha_dir"), quantile, .args = list(probs = c(0.025, .975)))[,c(2,3)])
+                                        ,"mu[1]", "mu[2]", "mu[3]","mu[4]"), quantile, .args = list(probs = c(0.025, .975)))[,c(2,3)])
 summary
 
 samples <- fit$draws(variables = c("Lcorr", "tau[1]", "tau[2]"
                                    ,"tau[3]", "tau[4]","phi[1]", "phi[2]","phi[3]","phi[4]","delta",
                                    "omega","durpar[1]", "durpar[2]"
-                                   ,"mu[1]", "mu[2]", "mu[3]","mu[4]","alpha_dir"),format="df")
+                                   ,"mu[1]", "mu[2]", "mu[3]","mu[4]"),format="df")
 fit$diagnostic_summary()
 nSamp <- nrow(samples)
 lpd=as.matrix(fit$lp(),nrow=nSamp,ncol=1)
